@@ -1,0 +1,2 @@
+class TestException < StandardError
+end

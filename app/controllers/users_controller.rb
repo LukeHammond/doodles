@@ -7,15 +7,16 @@ class UsersController < ApplicationController
     entity = Interactors::ResetPassword.new(params[:id], params[:user]).call
     json_response = Presenters::ResetPassword.new(entity).call
 
-    respond_with json_response
+    render :json => json_response, :status => 200 and return
+    # respond_with json_response
   end
 
   # curl -X POST -H "Content-Type: application/json" -d "{\"user\":{\"pass\":\"other\",\"pass_confirmation\":\"other\",\"token\":\"sluggy\",\"first_name\":\"harry\", \"last_name\":\"gibbon\"}}" localhost:3000/users.json
   def create
     entity = Interactors::CreateUser.new(params[:user]).call
-    # json_response = Presenters::CreateUser.new(entity).call
-    puts entity.inspect
-    respond_with entity
+    json_response = Presenters::CreateUser.new(entity).call
+    render :json => json_response, :status => 201 and return
+    # respond_with entity
   end
   
   # curl -X DELETE -H "Content-Type: application/json" -d "{\"user\":{\"pass\":\"other\",\"pass_confirmation\":\"other\",\"token\":\"sluggy\",\"first_name\":\"harry\", \"last_name\":\"gibbon\"}}" localhost:3000/users/20178.json
@@ -23,6 +24,7 @@ class UsersController < ApplicationController
     entity = Interactors::DeleteUser.new(params[:id], params[:user]).call
     json_response = Presenters::ResetPassword.new(entity).call
 
-    respond_with json_response    
+    render :json => json_response, :status => 200 and return
+    # respond_with json_response
   end
 end
