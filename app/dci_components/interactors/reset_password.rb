@@ -1,3 +1,5 @@
+require 'ostruct.rb'
+
 module Interactors
   class ResetPassword
     extend ActiveSupport::Memoizable
@@ -16,7 +18,9 @@ module Interactors
       user.save
       user.unlock_login
 
-      reset_token(params[:token]).update_attribute(:used_at, Time.now)      
+      reset_token(params[:token]).update_attribute(:used_at, Time.now)
+      
+      ::OpenStruct.new(:slug => user.slug)
     end
 
     protected
