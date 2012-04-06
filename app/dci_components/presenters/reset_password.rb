@@ -8,7 +8,7 @@ module Presenters
     end
     
     def call
-      user.marshal_dump.as_json if user.respond_to?(:marshal_dump)
+      ::ActiveSupport::JSON.encode(user.marshal_dump)
     end
   end
 end
