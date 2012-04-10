@@ -12,10 +12,12 @@ Doodles::Application.routes.draw do
 
   # Sample resource route (maps HTTP verbs to controller actions automatically):
   #   resources :products
-
-  resources :users do
-    member do
-      put :reset_password
+  resources :partners do
+    resources :users do
+      member do
+        put :reset_password
+        get :authenticate
+      end
     end
   end
   # Sample resource route with options:
