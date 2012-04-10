@@ -1,36 +1,46 @@
-require 'ostruct.rb'
+require "#{Rails.root}/app/dci_components/entities/user"
 
 module Interactors
   class ResetPassword
-    extend ActiveSupport::Memoizable
 
     attr_reader :user, :params
 
-    def initialize(user_id, params)
-      @user, @params = User.find(user_id), params
+    def initialize(partner_id, user_id, params)
+      @partner, @params = Partner.find(partner_id), params
+
+      begin
+        user_model = @partner.users.find(user_id)
+        @user = Entities::User.new(:user_model => user_model)
+
+      rescue ActiveRecord::RecordNotFound => record_not_found
+        @user = Entities::User.new(:user_model => user_model)
+        user.errors[:base] << "resource not found"
+      end
     end
 
     def call
-      raise 'invalid token' unless passes_validation?
+      user.errors.add(:token, 'not given') unless params[:token].present?
 
-      user.pass = params[:pass]
-      user.pass_confirmation = params[:pass_confirmation]
-      user.save
-      user.unlock_login
+      if user.valid?
+        user.pass = params[:pass]
+        user.pass_confirmation = params[:pass_confirmation]
+        user.save
+        user.unlock_login
 
-      reset_token(params[:token]).update_attribute(:used_at, Time.now)
+        reset_token(params[:token])
+      end
       
-      ::OpenStruct.new(:slug => user.slug)
+      user
     end
 
     protected
-    def passes_validation?
-      params[:token].present? && reset_token(params[:token]).present?
+    def reset_token(token_slug)
+      token = user.reset_tokens.find_by_slug(token_slug)
+      if token.present?
+        token.update_attribute(:used_at, Time.now)
+      else
+        user.errors.add(:token, "unable to find reset token for #{token_slug}")
+      end
     end
-
-    def reset_token(token)
-      user.reset_tokens.find_by_slug(token)
-    end
-    memoize :reset_token
   end
 end
